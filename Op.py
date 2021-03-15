@@ -13,14 +13,13 @@ class OpImage:
         return ret
 
     def threshold(image,threshold):
-        im2 = image.copy()
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
                 if image[i][j] >= threshold:
-                    im2[i][j] = 1
+                    image[i][j] = 1
                 else:
-                    im2[i][j] = 0
-        return im2
+                    image[i][j] = 0
+        return image
 
     def calcular_convolucao(wind,filter1):
         val=0
@@ -30,17 +29,16 @@ class OpImage:
         return val
 
     def convolucao(image,filter,n):
-        convoluted_image = image.copy()
         lm = int(n-1-(n-1)/2)
         for i in range(lm,image.shape[0]-lm,2*lm):
             for j in range(lm,image.shape[1]-lm,2*lm):
 
                 for jj in range( -lm,lm+1 ):
                     for ii in range( -lm,lm+1 ):
-                        convoluted_image[i+ii][j+jj] = image[i+ii][j+jj]*filter[ii][jj]
+                        image[i+ii][j+jj] = image[i+ii][j+jj]*filter[ii][jj]
 
                 #convoluted_image[i][j]=OpImage.calcular_convolucao(image,OpImage.janela(image,i,j,n))
-        return convoluted_image
+        return image
 
 
     def grayscale(image):
