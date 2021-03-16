@@ -3,3 +3,4 @@ images
 *.pyc
 .vscode
 livro.pdf
+conv.py

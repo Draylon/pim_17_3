@@ -57,22 +57,26 @@ class OpImage:
                 image[i][j]=OpImage.calcular_convolucao(src,OpImage.janela(src,i,j,n))
         return image
 
-    def rescale(output,min,max):
-        min1,max1=0,0
-        dist1 = max - min
-        for i in output:
-            for j in i:
-                if j > max1:
-                    max1=j
-                if j < min1:
-                    min1=j
-        dist2 = mod(max1) - mod(min1)
-        dist = dist1 / dist2
-        for i in range(len(output)):
-            for j in range(len(output[0])):
-                output[i][j]*=dist
-                output[i][j]-=min1
-        return output
+    def rescale(image,min,max):
+        externo_min, externo_max = 0,0
+        if(min>=0):
+            externo_min=0
+            externo_max = 1
+
+        #image = np.clip(image, min, max)
+        for i in range(len(image)):
+            for j in range(len(image[0])):
+                if image[i][j] > max:
+                    image[i][j] = max
+                elif image[i][j] < min:
+                    image[i][j] = min
+                if min != max:
+                    image[i][j] = (image[i][j] - min) / (max - min)
+            
+        if min != max:
+            return np.asarray(image * (externo_max - externo_min) + externo_min, dtype=image.dtype.type)
+        else:
+            return np.clip(image, externo_min, externo_max).astype(image.dtype.type)
         
         
         
@@ -82,36 +86,51 @@ class OpImage:
     def convolve(image, kernel):
         # grab the spatial dimensions of the image, along with
         # the spatial dimensions of the kernel
-        (iH, iW) = image.shape[:2]
-        (kH, kW) = kernel.shape[:2]
+        (iH, iW) = image.shape[0],image.shape[1]
+        (kH, kW) = kernel.shape[0],kernel.shape[1]
         # allocate memory for the output image, taking care to
         # "pad" the borders of the input image so the spatial
         # size (i.e., width and height) are not reduced
-        pad = (kW - 1) // 2
-        image = cv2.copyMakeBorder(image, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+        kernel_padding = int((kW - 1) / 2)
+        image = cv2.copyMakeBorder(image, kernel_padding, kernel_padding, kernel_padding, kernel_padding, cv2.BORDER_REPLICATE)
         output = np.zeros((iH, iW), dtype="float32")
         # loop over the input image, "sliding" the kernel across
         # each (x, y)-coordinate from left-to-right and top to
         # bottom
-        for y in np.arange(pad, iH + pad):
-            for x in np.arange(pad, iW + pad):
+        for y in np.arange(kernel_padding, iH + kernel_padding):
+            for x in np.arange(kernel_padding, iW + kernel_padding):
                 # extract the ROI of the image by extracting the
                 # *center* region of the current (x, y)-coordinates
                 # dimensions
-                roi = image[y - pad:y + pad + 1, x - pad:x + pad + 1]
+                roi = image[y - kernel_padding:y + kernel_padding + 1, x - kernel_padding:x + kernel_padding + 1]
                 # perform the actual convolution by taking the
                 # element-wise multiplicate between the ROI and
                 # the kernel, then summing the matrix
                 k = (roi * kernel).sum()
                 # store the convolved value in the output (x,y)-
                 # coordinate of the output image
-                output[y - pad, x - pad] = k
+                output[y - kernel_padding, x - kernel_padding] = k
         # rescale the output image to be in the range [0, 255]
         #output = rescale_intensity(output, in_range=(0, 255))
         output = OpImage.rescale(output, 0,255)
         output = (output * 255).astype("uint8")
         # return the output image
         return output
+
+
+    def median(image,kernel):
+    edgex = np.floor(len(kernel) / 2)
+    edgey = np.floor(len(kernel[0]) / 2)
+    for x in range(edgex,image.shape[0]-edgex):
+        for y in range(edgey,image.shape[1]-edgey):
+            i=0
+            for kx in range(len(kernel)):
+                for ky in range(len(kernel[0])):
+                    window[i] = inputPixelValue[x + fx - edgex][y + fy - edgey]
+                    i := i + 1
+            sort entries in window[]
+            outputPixelValue[x][y] := window[window width * window height / 2]
+
 
 
     def grayscale(image):
@@ -122,10 +141,6 @@ class OpImage:
             for j in range(image.shape[1]):
                 a1,a2,a3 = image[i][j]
                 image[i][j] = 0.299*a1 + 0.587*a2 + 0.114*a3'''
-                
-
-    def wait(self):
-        cv2.waitKey(0)
 
 
     '''        return
