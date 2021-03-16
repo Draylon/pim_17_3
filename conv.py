@@ -66,9 +66,17 @@ def rescale2(image, min,max):
         externo_min=0
         externo_max = 1
 
-    image = np.clip(image, min, max)
+    #image = np.clip(image, min, max)
+    for i in range(len(image)):
+        for j in range(len(image[0])):
+            if image[i][j] > max:
+                image[i][j] = max
+            elif image[i][j] < min:
+                image[i][j] = min
+            if min != max:
+                image[i][j] = (image[i][j] - min) / (max - min)
+        
     if min != max:
-        image = (image - min) / (max - min)
         return np.asarray(image * (externo_max - externo_min) + externo_min, dtype=image.dtype.type)
     else:
         return np.clip(image, externo_min, externo_max).astype(image.dtype.type)
@@ -127,6 +135,39 @@ sobelY = np.array((
     [0, 0, 0],
     [1, 2, 1]), dtype="int")
 
+edge1 = np.array((
+    [1,0,-1],
+    [0, 0, 0],
+    [-1,0,1]), dtype="int")
+
+edge2 = np.array((
+    [0,-1,0],
+    [-1, 4, -1],
+    [0, -1, 0]), dtype="int")
+
+edge3 = np.array((
+    [-1, -1, -1],
+    [-1, 8, -1],
+    [-1, -1, -1]), dtype="int")
+
+boxblur = np.array((
+    [1,1,1],
+    [1,1,1],
+    [1,1,1]), dtype="int") * (1/9)
+
+gaussblur = np.array((
+    [1,2,1],
+    [2,4,2],
+    [1,2,1]), dtype="int") * (1/16)
+
+unsharpmasking = np.array((
+    [1,4,6,4,1],
+    [4,16,24,16,4],
+    [6,24,-476,24,6],
+    [4,16,24,16,4],
+    [1,4,6,4,1]), dtype="int") * (-1/256)
+
+
 # construct the kernel bank, a list of kernels we're going
 # to apply using both our custom `convole` function and
 # OpenCV's `filter2D` function
@@ -136,7 +177,13 @@ kernelBank = (
     ("sharpen", sharpen),
     ("laplacian", laplacian),
     ("sobel_x", sobelX),
-    ("sobel_y", sobelY)
+    ("sobel_y", sobelY),
+    ("edge1",edge1),
+    ("edge2",edge2),
+    ("edge3",edge3),
+    ("boxblur",boxblur),
+    ("gaussblur",gaussblur),
+    ("unsharpmasking",unsharpmasking)
 )
 
 # load the input image and convert it to grayscale
@@ -149,11 +196,11 @@ for (kernelName, kernel) in kernelBank:
     # function
     print("[INFO] applying {} kernel".format(kernelName))
     convoleOutput = convolve(gray, kernel)
-    opencvOutput = cv2.filter2D(gray, -1, kernel)
+    #opencvOutput = cv2.filter2D(gray, -1, kernel)
     # show the output images
     cv2.imshow("original", gray)
     cv2.imshow("{} - convole".format(kernelName), convoleOutput)
-    cv2.imshow("{} - opencv".format(kernelName), opencvOutput)
+    #cv2.imshow("{} - opencv".format(kernelName), opencvOutput)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
