@@ -77,7 +77,8 @@ class OpImage:
         
         
 
-
+    #https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/
+    #https://scikit-image.org/docs/dev/api/skimage.exposure.html#skimage.exposure.rescale_intensity
     def convolve(image, kernel):
         # grab the spatial dimensions of the image, along with
         # the spatial dimensions of the kernel
