@@ -19,13 +19,15 @@ gray = OpImage.grayscale(image1)
 #medc = OpImage.median_margin(gray,5)
 
 
-teste1 = OpImage.media_convolucao(gray,5)
+teste1 = OpImage.media_convolucao(gray,3)
+
+shrp = OpImage.convolve(teste1,sharpen)
 
 cv2.imshow("teste1",teste1)
 
 cv2.imshow("original",image1)
 cv2.imshow("gray",gray)
-#cv2.imshow("sharpen",shrp)
+cv2.imshow("sharpen",shrp)
 #cv2.imshow("median",med)
 
 
