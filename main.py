@@ -3,18 +3,38 @@ import numpy as np
 from Op import OpImage
 from kernels import *
 
-image = cv2.imread("./images/casa.png")
+image1 = cv2.imread("./images/img02.jpg")
 
 #d1=( image.shape[0]*3,image.shape[1]*2 )
 #image = cv2.resize(image,d1)
 
 #l1 = image.janela(image.getMidWidth(),image.getMidHeight(),3)
 
-gray = OpImage.grayscale(image)
+gray = OpImage.grayscale(image1)
+
+#shrp = OpImage.convolve(gray,sharpen)
+
+#med = OpImage.median(gray,3)
+
+#medc = OpImage.median_margin(gray,5)
+
+
+teste1 = OpImage.media_convolucao(gray,5)
+
+cv2.imshow("teste1",teste1)
+
+cv2.imshow("original",image1)
+cv2.imshow("gray",gray)
+#cv2.imshow("sharpen",shrp)
+#cv2.imshow("median",med)
+
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 #thold50 = OpImage.threshold(grayscale.copy(),200)
 
-runAllKernels(gray)
+#runAllKernelsSimultaneously(thold)
 
 
 '''

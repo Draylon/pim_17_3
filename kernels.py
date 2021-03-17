@@ -26,6 +26,17 @@ sobelY = np.array((
     [0, 0, 0],
     [1, 2, 1]), dtype="int")
 
+prewittX = np.array((
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]), dtype="int")
+
+prewittY = np.array((
+    [1, 1, 1],
+    [0, 0, 0],
+    [-1, -1, -1]), dtype="int")
+
+
 edge1 = np.array((
     [1,0,-1],
     [0, 0, 0],
@@ -58,8 +69,6 @@ unsharpmasking = np.array((
     [4,16,24,16,4],
     [1,4,6,4,1]), dtype="int") * (-1/256)
 
-
-
 kernels_list = [
 	("smallBlur", smallBlur),
     ("largeBlur", largeBlur),
@@ -80,10 +89,20 @@ def runAllKernels(image):
     for (kernelName, kernel) in kernels_list:
         print("[INFO] applying {} kernel".format(kernelName))
         convoleOutput = OpImage.convolve(image, kernel)
-        opencvOutput = cv2.filter2D(image, -1, kernel)
+        #opencvOutput = cv2.filter2D(image, -1, kernel)
         # show the output images
-        cv2.imshow("original", image)
         cv2.imshow("{} - convole".format(kernelName), convoleOutput)
-        cv2.imshow("{} - opencv".format(kernelName), opencvOutput)
+        #cv2.imshow("{} - opencv".format(kernelName), opencvOutput)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+def runAllKernelsSimultaneously(image):
+    for (kernelName, kernel) in kernels_list:
+        print("[INFO] applying {} kernel".format(kernelName))
+        convoleOutput = OpImage.convolve(image, kernel)
+        #opencvOutput = cv2.filter2D(image, -1, kernel)
+        # show the output images
+        cv2.imshow("{} - convole".format(kernelName), convoleOutput)
+        #cv2.imshow("{} - opencv".format(kernelName), opencvOutput)
+        #cv2.destroyAllWindows()
+    cv2.waitKey(0)

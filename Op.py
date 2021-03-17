@@ -18,44 +18,17 @@ class OpImage:
                 ret[-1].append(image[x+i][y+j])
         return ret
 
-    def threshold(image,threshold):
+    def threshold(image,threshold,inverse=False):
+        out = image.copy()
+        match = 255 if inverse == False else 0
+        no_match = 0 if inverse == False else 255
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
                 if image[i][j] >= threshold:
-                    image[i][j] = 255
+                    out[i][j] = match
                 else:
-                    image[i][j] = 0
-        return image
-
-    def calcular_convolucao(wind,filter1):
-        val=0
-        for i in range(len(filter1)):
-            for j in range(len(filter1[0])):
-                val+= filter1[i][j]*wind[i][j]
-        return val
-
-    def convolucao2(image,filter,n):
-        d1 = (int(image.shape[0]/n),int(image.shape[1]/n))
-        cv2.resize(image,d1)
-        lm = int(n-1-(n-1)/2)
-        for i in range(lm,image.shape[0]-lm,2*lm):
-            for j in range(lm,image.shape[1]-lm,2*lm):
-
-                for jj in range( -lm,lm+1 ):
-                    for ii in range( -lm,lm+1 ):
-                        image[i+ii][j+jj] = image[i+ii][j+jj]*filter[ii][jj]
-
-                #convoluted_image[i][j]=OpImage.calcular_convolucao(image,OpImage.janela(image,i,j,n))
-        return image
-    
-    def convolucao(src,filter,n):
-        d1 = (int(src.shape[0]/n),int(src.shape[1]/n))
-        image = cv2.resize(src,d1)
-        lm = int(n-1-(n-1)/2)
-        for i in range(lm,image.shape[0]-lm,2*lm):
-            for j in range(lm,image.shape[1]-lm,2*lm):
-                image[i][j]=OpImage.calcular_convolucao(src,OpImage.janela(src,i,j,n))
-        return image
+                    out[i][j] = no_match
+        return out
 
     def rescale(image,min,max):
         externo_min, externo_max = 0,0
@@ -117,19 +90,51 @@ class OpImage:
         # return the output image
         return output
 
+    def media_convolucao(image,n):
+        media_matriz = np.ones((n,n)) * (1 / n**2)
+        return OpImage.convolve(image,media_matriz)
 
-    def median(image,kernel):
-    edgex = np.floor(len(kernel) / 2)
-    edgey = np.floor(len(kernel[0]) / 2)
-    for x in range(edgex,image.shape[0]-edgex):
-        for y in range(edgey,image.shape[1]-edgey):
-            i=0
-            for kx in range(len(kernel)):
-                for ky in range(len(kernel[0])):
-                    window[i] = inputPixelValue[x + fx - edgex][y + fy - edgey]
-                    i := i + 1
-            sort entries in window[]
-            outputPixelValue[x][y] := window[window width * window height / 2]
+
+
+    def median(image,n): # pegando os cantos
+        out = image.copy()
+        marg = int((n-1)/2)
+
+        for x in range(image.shape[0]):
+            for y in range(image.shape[1]):
+                med_ = 0
+                ctx = 0
+                for wi in range(-marg,marg+1):
+                    for wj in range(-marg,marg+1):
+                        if x-wi < 0 or y-wj < 0 or x-wi >= image.shape[0] or y-wj >= image.shape[1]:
+                            continue
+                        if wi == wj and wi == marg:
+                            continue
+                        med_+= image[x-wi][y-wj]
+                        ctx+=1
+                med_/=ctx
+                out[x][y]=med_
+        return out
+
+
+    def median_margin(image,n):
+        #window = np.zeros((n,n))
+        out = image.copy()
+        marg = int((n-1)/2)
+
+        for x in range(marg,image.shape[0]-marg):
+            for y in range(marg,image.shape[1]-marg):
+                ii=0
+                for i in range(n):
+                    for j in range(n):
+                        if not(i == j and i == marg):
+                            ii += image[x + i - marg][y + j - marg]
+                ii/=(n*n)-1
+
+                #sort entries in window[]
+                out[x][y] = ii #window[mid_][mid_]
+        return out
+        
 
 
 
