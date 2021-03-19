@@ -87,7 +87,9 @@ class OpImage:
     def threshold_media(image,k,sigma):
         out=[image.copy()]*len(k)
         rn = range(len(k))
-        T = [OpImage.gradienteMedia(image) - kk*sigma for kk in k]
+        gradMedia = OpImage.gradienteMedia(image)
+        print(gradMedia)
+        T = [ gradMedia - kk*sigma for kk in k ]
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
                 for ti in rn:

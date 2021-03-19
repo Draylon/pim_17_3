@@ -3,7 +3,7 @@ import numpy as np
 from Op import OpImage
 from kernels import *
 import matplotlib.pyplot
-from hog_ex import *
+#from hog_ex import *
 
 image1 = cv2.imread("./images/carro1.jpg")
 #gray = cv2.imread("./images/squaretfu.jpg")
