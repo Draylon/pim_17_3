@@ -31,10 +31,12 @@ class OpImage:
         no_match = 0 if inverse == False else 255
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
-                if image[i][j] >= threshold:
+                if mod(image[i][j]) < threshold:
+                    out[i][j] = no_match
+                '''if image[i][j] >= threshold:
                     out[i][j] = match
                 else:
-                    out[i][j] = no_match
+                    out[i][j] = no_match'''
         return out
 
     @staticmethod
@@ -142,7 +144,7 @@ class OpImage:
     @staticmethod
     def media_convolucao(image,n):
         media_matriz = np.ones((n,n)) * (1 / n**2)
-        return OpImage.convolve(image,media_matriz)
+        return OpImage.convolucao(image,media_matriz)
 
     @staticmethod
     def media(image,n): # pegando os cantos
@@ -234,6 +236,17 @@ class OpImage:
         return out
 
     @staticmethod
+    def rgbSum(image,hog):
+        out=image.copy()
+        for x in range(image.shape[0]):
+            for y in range(image.shape[1]):
+                #out[x][y][0] = hog[x][y]
+                out[x][y][1] = hog[x][y]
+        return out
+        
+
+
+    @staticmethod
     def merge_min(image,subtr):
         nshape = image.copy()
         for x in range(image.shape[0]):
@@ -246,7 +259,7 @@ class OpImage:
         nshape = image.copy()
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
-                nshape[x][y]=np.min([image[x][y]+add[x][y] ,255])
+                nshape[x][y]=np.min([int(image[x][y])+int(add[x][y]) ,255])
         return nshape
 
     
@@ -332,7 +345,7 @@ class OpImage:
         #b_step = max_angle / nbins
 
         radius = min(csx, csy) // 2 - 1
-        hog_image = np.zeros((sy, sx), dtype=float)
+        hog_image = np.zeros((sx, sy), dtype=float)
         for x in range(n_cells_x):
             for y in range(n_cells_y):
                 for o in range(nbins):
@@ -343,7 +356,7 @@ class OpImage:
                                     int(centre[1] - dx),
                                     int(centre[0] + dy),
                                     int(centre[1] + dx))
-                    hog_image[rr, cc] += hist[y, x, o]
+                    hog_image[cc, rr] += hist[y, x, o]
         return hog_image
 
                 
@@ -351,14 +364,19 @@ class OpImage:
     @staticmethod
     def hog(magnitude,direction):
         #angles=np.array([10,30,50,70,90,110,130,150,170])
-        angles=np.array([0,20,40,60,80,100,120,140,160])
+        #angles=np.array([0,20,40,60,80,100,120,140,160])
+        angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
         angrange = range(len(angles))
+        print(magnitude.shape)
+        print(direction.shape)
         lmy,lmx = magnitude.shape[:2]
-        hog_cells = np.zeros(( lmy//8+1,lmx//8+1,len(angles)))
+        print(lmx,lmy)
+        hog_cells = np.ndarray( ((lmx//8),(lmy//8),len(angles)) )
+        print(hog_cells.shape)
         ii,jj=0,0
-        for i in range(0,lmy,8):
+        for i in range(0,lmx-1,8):
             jj=0
-            for j in range(0,lmx,8):
+            for j in range(0,lmy-1,8):
                 '''cell_direction = direction[178:186, 138:146]
                 cell_magnitude = magnitude[178:186, 138:146]'''
                 cell_direction = direction[j:j+7, i:i+7]
@@ -371,3 +389,30 @@ class OpImage:
             ii+=1
         return hog_cells
 
+    @staticmethod
+    def hog_region(magnitude,direction,x0,y0,x1,y1):
+        #angles=np.array([10,30,50,70,90,110,130,150,170])
+        #angles=np.array([0,20,40,60,80,100,120,140,160])
+        angles=np.array([0,20,40,60,80,100,120,140,160])
+        angrange = range(len(angles))
+        lmy,lmx = magnitude.shape[:2]
+        print(magnitude.shape)
+        print(direction.shape)
+        print(lmx,lmy)
+        hog_cells = np.ndarray( ((lmx//8),(lmy//8),len(angles)) )
+        print(hog_cells.shape)
+        ii,jj=0,0
+        for i in range(0,lmx-1,8):
+            jj=0
+            for j in range(0,lmy-1,8):
+                '''cell_direction = direction[178:186, 138:146]
+                cell_magnitude = magnitude[178:186, 138:146]'''
+                cell_direction = direction[j:j+7, i:i+7]
+                cell_magnitude = magnitude[j:j+7, i:i+7]
+                HOG_list = OpImage.HOG_cell_histogram(cell_direction, cell_magnitude, angles)
+                norm_hog = OpImage.normalizeHog( HOG_list )
+                for nh in angrange:
+                    hog_cells[ii][jj][nh]=norm_hog[nh]
+                jj+=1
+            ii+=1
+        return hog_cells
