@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from Op import OpImage
 from kernels import *
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 #from hog_ex import *
 
 image1 = cv2.imread("./images/carro1.jpg")
@@ -14,12 +14,12 @@ image1 = cv2.imread("./images/carro1.jpg")
 #l1 = image.janela(image.getMidWidth(),image.getMidHeight(),3)
 
 gray = OpImage.grayscale(image1)
+gray = OpImage.media_convolucao(gray,5)
 sx = OpImage.convolucao(gray,sobelX)
 sy = OpImage.convolucao(gray,sobelY)
+
 magnitude,angulos = OpImage.mag_direction(sx,sy)
-magnitude_limiar = np.std(magnitude)
-print( type(magnitude_limiar) ,magnitude_limiar)
-limiar1 = OpImage.threshold_media(magnitude,[0,1,2],magnitude_limiar)
+limiar1 = OpImage.threshold_media(magnitude,[0,1,1.7,1.85])
 
 #gray = gray - OpImage.media_conectividade(gray,5,(0,100,True))
 #gray = OpImage.convolucao(gray,sharpen)
@@ -33,20 +33,32 @@ ss = OpImage.merge_max(sx,sy)
 mag,ang = OpImage.mag_direction(sx,sy)
 
 #_,visualize = build_histogram(mag,ang,(8,8),False,9,(3,3),True,False,True)
+'''
 
-hog_data = OpImage.hog(mag,ang)
-hog_image = OpImage.drawHOG(hog_data)
+hog_dataC = [ OpImage.hog(xx,angulos) for xx in limiar1 ]
+hog_imageC = [ OpImage.drawHOG(hcd) for hcd in hog_dataC ]
+
+for hogmg in hog_imageC:
+    med=0
+    for i in hogmg:
+        for j in i:
+            med+=j
+    print("media",med)
+
 #hog_image = OpImage.threshold(hog_image,0.95)
 
-hog_original = OpImage.rgbSum(image1,ss)
+#hog_original = OpImage.rgbSum(image1,ss)
 
-'''
+hog_hist = OpImage.agrupar_hog(hog_dataC,57,24,4)
+hog_len = len(hog_hist)
+plt.plot(np.arange(hog_len),hog_hist)
 
 cv2.imshow("gray",gray)
 cv2.imshow("sx",sx)
 cv2.imshow("sy",sy)
 #cv2.imshow("SS",ss)
-#cv2.imshow("HOG IMAGE",hog_image)
+for ind,img in enumerate(hog_imageC):
+    cv2.imshow("HOG IMAGE"+str(ind),img)
 #cv2.imshow("HOG OFFICIAL",visualize)
 #cv2.imshow("IMAGEM ORIGINAL",image1)
 #cv2.imshow("HOG OVERLAY",hog_original)

@@ -15,6 +15,10 @@ class OpImage:
                 
     @staticmethod
     def janela(image,x,y,n):
+        """
+        IMPLEMENTAÇÃO DA JANELA
+        TAMBÉM É VISTO COMO REGION-OF-INTEREST
+        """
         #if n % 2 == 0: raise Exception("'N' deve ser Ímpar")
         ret = []
         lm = int(n-1-(n-1)/2)
@@ -23,6 +27,7 @@ class OpImage:
             for i in range( -lm,lm+1 ):
                 ret[-1].append(image[x+i][y+j])
         return ret
+        
 
     @staticmethod
     def threshold(image,threshold,inverse=False):
@@ -63,14 +68,18 @@ class OpImage:
     @staticmethod
     def gradienteMedia(grad1):
         med = 0
+        ci = 1
         for x in range(grad1.shape[0]):
             for y in range(grad1.shape[1]):
-                med+=grad1[x][y]
-        med/=(grad1.shape[0]*grad1.shape[1])
+                if grad1[x][y] > 0:
+                    med+=grad1[x][y]
+                    ci+=1
+        med/=ci
         return med
 
     @staticmethod
     def mag_direction(im1,im2):
+        print("Magnitude e direção")
         mag = np.ones((im1.shape[0],im1.shape[1]))
         dir1 = np.ones((im1.shape[0],im1.shape[1]))
         for x in range(im1.shape[0]):
@@ -84,12 +93,16 @@ class OpImage:
         return mag,dir1
 
     @staticmethod
-    def threshold_media(image,k,sigma):
-        out=[image.copy()]*len(k)
+    def threshold_media(image,k):
+        print("Threshold por  média das magnitudes")
+        sigma = np.std(image)
+        #out=[np.zeros((image.shape[0],image.shape[1]))]*len(k)
+        out=np.ndarray(( len(k),image.shape[0],image.shape[1] ))
         rn = range(len(k))
         gradMedia = OpImage.gradienteMedia(image)
         print(gradMedia)
-        T = [ gradMedia - kk*sigma for kk in k ]
+        T = [ gradMedia - (kk*sigma) for kk in k ]
+        print(T)
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
                 for ti in rn:
@@ -99,36 +112,12 @@ class OpImage:
                         out[ti][x][y]=0
         return out
 
-    '''𝐼𝑠𝑎í𝑑𝑎(𝑥,𝑦)=255 𝑠𝑒 𝑚𝑎𝑔(𝑥,𝑦)≥𝑇
-    𝐼𝑠𝑎í𝑑𝑎(𝑥,𝑦)=0 𝑠𝑒 𝑚𝑎𝑔(𝑥,𝑦)<𝑇'''
-
-    '''@staticmethod
-    def calculate_gradient(img, template):
-        ts = template.size #Number of elements in the template (3).
-        #New padded array to hold the resultant gradient image.
-        new_img = np.zeros((img.shape[0]+ts-1, 
-                            img.shape[1]+ts-1))
-        new_img[np.uint16((ts-1)/2.0):img.shape[0]+np.uint16((ts-1)/2.0), 
-                np.uint16((ts-1)/2.0):img.shape[1]+np.uint16((ts-1)/2.0)] = img
-        result = np.zeros((new_img.shape))
-        
-        for r in np.uint16(np.arange((ts-1)/2.0, img.shape[0]+(ts-1)/2.0)):
-            for c in np.uint16(np.arange((ts-1)/2.0, 
-                                img.shape[1]+(ts-1)/2.0)):
-                curr_region = new_img[r-np.uint16((ts-1)/2.0):r+np.uint16((ts-1)/2.0)+1, 
-                                    c-np.uint16((ts-1)/2.0):c+np.uint16((ts-1)/2.0)+1]
-                curr_result = curr_region * template
-                score = np.sum(curr_result)
-                result[r, c] = score
-        #Result of the same size as the original image after removing the padding.
-        result_img = result[np.uint16((ts-1)/2.0):result.shape[0]-np.uint16((ts-1)/2.0), 
-                            np.uint16((ts-1)/2.0):result.shape[1]-np.uint16((ts-1)/2.0)]
-        return result_img'''
 
     #https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/
     #https://scikit-image.org/docs/dev/api/skimage.exposure.html#skimage.exposure.rescale_intensity
     @staticmethod
     def convolucao(image, kernel):
+        print("convolucao do filtro ",kernel)
         (iW, iH) = image.shape[0],image.shape[1]
         (kW, kH) = kernel.shape[0],kernel.shape[1]
         output = np.full((iW, iH),128, dtype="float32")
@@ -145,6 +134,7 @@ class OpImage:
 
     @staticmethod
     def media_convolucao(image,n):
+        print("média por convolução de matriz identidade")
         media_matriz = np.ones((n,n)) * (1 / n**2)
         return OpImage.convolucao(image,media_matriz)
 
@@ -269,6 +259,7 @@ class OpImage:
 
     @staticmethod
     def grayscale(image):
+        print("Grayscale da imagem")
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         '''cv2.rectangle(None,(0,0),(image.shape[0],image.shape[1]),0)
         image.shape = (image.shape[0],image.shape[1],1)
@@ -336,6 +327,7 @@ class OpImage:
 
     @staticmethod
     def drawHOG(hist, csx=8, csy=8, signed_orientation=False):
+        print("desenhando hog")
         if signed_orientation:
             max_angle = 2*np.pi
         else:
@@ -365,16 +357,13 @@ class OpImage:
 
     @staticmethod
     def hog(magnitude,direction):
+        print("Calculando hog da imagem")
         #angles=np.array([10,30,50,70,90,110,130,150,170])
         #angles=np.array([0,20,40,60,80,100,120,140,160])
         angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
         angrange = range(len(angles))
-        print(magnitude.shape)
-        print(direction.shape)
         lmy,lmx = magnitude.shape[:2]
-        print(lmx,lmy)
         hog_cells = np.ndarray( ((lmx//8),(lmy//8),len(angles)) )
-        print(hog_cells.shape)
         ii,jj=0,0
         for i in range(0,lmx-1,8):
             jj=0
@@ -418,3 +407,14 @@ class OpImage:
                 jj+=1
             ii+=1
         return hog_cells
+
+    @staticmethod
+    def agrupar_hog(hog_data,x=0,y=0,block_size=4):
+        hog_angles=hog_data[:3]
+        hog_vector = np.zeros((1,hog_angles))
+        for i in range(x,x+block_size):
+            for j in range(x,x+block_size):
+                for k in range(len(hog_angles)):
+                    hog_vector[k] = hog_data[x][y][k]
+        hog_vector = OpImage.normalizeHog(hog_vector)
+        return hog_vector
