@@ -18,8 +18,9 @@ sx = OpImage.convolucao(gray,sobelX)
 sy = OpImage.convolucao(gray,sobelY)
 magnitude,angulos = OpImage.mag_direction(sx,sy)
 magnitude_limiar = np.std(magnitude)
-print( type(magnitude_limiar) )
+print( type(magnitude_limiar) ,magnitude_limiar)
 limiar1 = OpImage.threshold_media(magnitude,[0,1,2],magnitude_limiar)
+
 #gray = gray - OpImage.media_conectividade(gray,5,(0,100,True))
 #gray = OpImage.convolucao(gray,sharpen)
 

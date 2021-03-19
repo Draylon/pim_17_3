@@ -61,6 +61,15 @@ class OpImage:
             return np.clip(image, externo_min, externo_max).astype(image.dtype.type)
         
     @staticmethod
+    def gradienteMedia(grad1):
+        med = 0
+        for x in range(grad1.shape[0]):
+            for y in range(grad1.shape[1]):
+                med+=grad1[x][y]
+        med/=(grad1.shape[0]*grad1.shape[1])
+        return med
+
+    @staticmethod
     def mag_direction(im1,im2):
         mag = np.ones((im1.shape[0],im1.shape[1]))
         dir1 = np.ones((im1.shape[0],im1.shape[1]))
@@ -113,15 +122,6 @@ class OpImage:
         result_img = result[np.uint16((ts-1)/2.0):result.shape[0]-np.uint16((ts-1)/2.0), 
                             np.uint16((ts-1)/2.0):result.shape[1]-np.uint16((ts-1)/2.0)]
         return result_img'''
-
-    @staticmethod
-    def gradienteMedia(grad1):
-        med = 0
-        for x in range(grad1.shape[0]):
-            for y in range(grad1.shape[1]):
-                med+=grad1[x][y]
-        med/=grad1.shape[0]*grad1.shape[1]
-        return med
 
     #https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/
     #https://scikit-image.org/docs/dev/api/skimage.exposure.html#skimage.exposure.rescale_intensity
