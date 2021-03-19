@@ -15,6 +15,7 @@ class OpImage:
                 
     @staticmethod
     def janela(image,x,y,n):
+        print("Janela",n,"x",n,"em",x,":",y)
         """
         IMPLEMENTAÇÃO DA JANELA
         TAMBÉM É VISTO COMO REGION-OF-INTEREST
@@ -25,7 +26,7 @@ class OpImage:
         for j in range( -lm,lm+1 ):
             ret.append([])
             for i in range( -lm,lm+1 ):
-                ret[-1].append(image[x+i][y+j])
+                ret[-1].append(image[y+j][x+i])
         return ret
         
 
@@ -101,7 +102,7 @@ class OpImage:
         rn = range(len(k))
         gradMedia = OpImage.gradienteMedia(image)
         print(gradMedia)
-        T = [ gradMedia - (kk*sigma) for kk in k ]
+        T = [ np.max([gradMedia - (kk*sigma),0.1]) for kk in k ]
         print(T)
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
@@ -384,7 +385,7 @@ class OpImage:
     def hog_region(magnitude,direction,x0,y0,x1,y1):
         #angles=np.array([10,30,50,70,90,110,130,150,170])
         #angles=np.array([0,20,40,60,80,100,120,140,160])
-        angles=np.array([0,20,40,60,80,100,120,140,160])
+        angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
         angrange = range(len(angles))
         lmy,lmx = magnitude.shape[:2]
         print(magnitude.shape)
@@ -410,11 +411,26 @@ class OpImage:
 
     @staticmethod
     def agrupar_hog(hog_data,x=0,y=0,block_size=4):
-        hog_angles=hog_data[:3]
-        hog_vector = np.zeros((1,hog_angles))
+        hog_angles=hog_data.shape[2]
+        hog_vector = np.zeros((hog_angles))
         for i in range(x,x+block_size):
             for j in range(x,x+block_size):
-                for k in range(len(hog_angles)):
+                for k in range(hog_angles):
                     hog_vector[k] = hog_data[x][y][k]
         hog_vector = OpImage.normalizeHog(hog_vector)
         return hog_vector
+
+
+    @staticmethod
+    def drawHOGHistogram(hog_hist):
+        x = angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
+        #x = np.arange(len(hog_hist))
+        fig, axes = plt.subplots(ncols=1, nrows=1)
+        plt.title('HOG')
+        plt.xlabel('Angulos')
+        plt.ylabel('Magnitudes')
+        axes.bar(x, hog_hist, label="Histograma 1",width=0.8)
+        axes.set_xticks(x)
+        #axes.set_xticklabels(['Positive'])
+        plt.legend()
+        plt.show()

@@ -5,63 +5,51 @@ from kernels import *
 import matplotlib.pyplot as plt
 #from hog_ex import *
 
-image1 = cv2.imread("./images/carro1.jpg")
+image1 = cv2.imread("./images/img02.jpg")
 #gray = cv2.imread("./images/squaretfu.jpg")
 #image1 = np.float32(image1) / 255.0
 #d1=( image.shape[0]*3,image.shape[1]*2 )
 #image = cv2.resize(image,d1)
 
 #l1 = image.janela(image.getMidWidth(),image.getMidHeight(),3)
-
 gray = OpImage.grayscale(image1)
-gray = OpImage.media_convolucao(gray,5)
 sx = OpImage.convolucao(gray,sobelX)
 sy = OpImage.convolucao(gray,sobelY)
 
 magnitude,angulos = OpImage.mag_direction(sx,sy)
-limiar1 = OpImage.threshold_media(magnitude,[0,1,1.7,1.85])
-
-#gray = gray - OpImage.media_conectividade(gray,5,(0,100,True))
-#gray = OpImage.convolucao(gray,sharpen)
-
-'''gray = OpImage.media_convolucao(gray,5)
-gray = OpImage.convolucao(gray,unsharpmasking)
-sx = OpImage.convolucao(gray,sobelX)
-sy = OpImage.convolucao(gray,sobelY)
-ss = OpImage.merge_max(sx,sy)
+limiar1 = OpImage.threshold_media(magnitude,[1.7])
 
 mag,ang = OpImage.mag_direction(sx,sy)
 
 #_,visualize = build_histogram(mag,ang,(8,8),False,9,(3,3),True,False,True)
-'''
+
 
 hog_dataC = [ OpImage.hog(xx,angulos) for xx in limiar1 ]
-hog_imageC = [ OpImage.drawHOG(hcd) for hcd in hog_dataC ]
+#hog_imageC = [ OpImage.drawHOG(hcd) for hcd in hog_dataC ]
 
-for hogmg in hog_imageC:
+'''for hogmg in hog_imageC:
     med=0
     for i in hogmg:
         for j in i:
             med+=j
-    print("media",med)
+    print("media",med)'''
 
 #hog_image = OpImage.threshold(hog_image,0.95)
-
 #hog_original = OpImage.rgbSum(image1,ss)
 
-hog_hist = OpImage.agrupar_hog(hog_dataC,57,24,4)
-hog_len = len(hog_hist)
-plt.plot(np.arange(hog_len),hog_hist)
+hog_hist = OpImage.agrupar_hog(hog_dataC[0],57,24,4)
+OpImage.drawHOGHistogram(hog_hist)
 
+'''
 cv2.imshow("gray",gray)
 cv2.imshow("sx",sx)
 cv2.imshow("sy",sy)
-#cv2.imshow("SS",ss)
 for ind,img in enumerate(hog_imageC):
     cv2.imshow("HOG IMAGE"+str(ind),img)
 #cv2.imshow("HOG OFFICIAL",visualize)
-#cv2.imshow("IMAGEM ORIGINAL",image1)
+cv2.imshow("IMAGEM ORIGINAL",image1)
 #cv2.imshow("HOG OVERLAY",hog_original)
+'''
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
