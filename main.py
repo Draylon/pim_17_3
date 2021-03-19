@@ -3,6 +3,7 @@ import numpy as np
 from Op import OpImage
 from kernels import *
 import matplotlib.pyplot
+#from hog_ex import *
 
 image1 = cv2.imread("./images/carro1.jpg")
 #gray = cv2.imread("./images/squaretfu.jpg")
@@ -16,11 +17,12 @@ gray = OpImage.grayscale(image1)
 
 sx = OpImage.convolucao(gray,sobelX)
 sy = OpImage.convolucao(gray,sobelY)
+#ss = OpImage.merge_max(sx,sy)
+mag,ang = OpImage.mag_direction(sx,sy)
+#mag, ang = cv2.cartToPolar(sx, sy, angleInDegrees=True)
 
-#mag,ang = OpImage.mag_direction(sx,sy)
-mag, ang = cv2.cartToPolar(sx, sy, angleInDegrees=True)
-
-OpImage.hog(mag,ang)
+#_,visualize = build_histogram(mag,ang,(8,8),False,9,(3,3),True,False,True)
+hog_data = OpImage.hog(mag,ang)
 
 #grad2 = OpImage.calculate_gradient(gray,np.array([-1,0,1]))
 #med1=OpImage.gradienteMedia(grad)
@@ -28,9 +30,17 @@ OpImage.hog(mag,ang)
 #sc = sx + sy
 #sc = OpImage.merge_max(sx,sy)
 
+hog_image = OpImage.drawHOG(hog_data)
+
 cv2.imshow("gray",gray)
 cv2.imshow("sx",sx)
 cv2.imshow("sy",sy)
+#cv2.imshow("SS",ss)
+cv2.imshow("HOG IMAGE",hog_image)
+#cv2.imshow("HOG OFFICIAL",visualize)
+#cv2.imshow("HOG GRAY",)
+
+#cv2.imshow("image result",visualize)
 #cv2.imshow("mag1",mag)
 #cv2.imshow("angle",ang)
 #cv2.imshow("sc",sc)
