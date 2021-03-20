@@ -32,6 +32,10 @@ class OpImage:
 
     @staticmethod
     def threshold(image,threshold,inverse=False):
+        """
+        Percorre a imagem(grayscale), consultando o valor de cada pixel, e atribuindo
+        255 se o valor for maior que o 'threshold', senão atribui 0
+        """
         out = image.copy()
         match = 255 if inverse == False else 0
         no_match = 0 if inverse == False else 255
@@ -47,6 +51,9 @@ class OpImage:
 
     @staticmethod
     def rescale(image,min,max):
+        """
+        remapea os valores de uma lista para entre os parametros 'min' e 'max'
+        """
         externo_min, externo_max = 0,0
         if(min>=0):
             externo_min=0
@@ -68,6 +75,11 @@ class OpImage:
         
     @staticmethod
     def gradienteMedia(grad1):
+        """
+        Código para calcular média
+        pode ser utilizado para qualquer matriz
+        É utilizado pelo algoritmo de threshold baseado em médias
+        """
         med = 0
         ci = 1
         for x in range(grad1.shape[0]):
@@ -80,6 +92,11 @@ class OpImage:
 
     @staticmethod
     def mag_direction(im1,im2):
+        """
+        calcula a transformação de coordenadas cartesianas
+        para polares, em formato de magnitude ( 'r' )
+        e direcao ( theta )
+        """
         print("Magnitude e direção")
         mag = np.ones((im1.shape[0],im1.shape[1]))
         dir1 = np.ones((im1.shape[0],im1.shape[1]))
@@ -95,6 +112,12 @@ class OpImage:
 
     @staticmethod
     def threshold_media(image,k):
+        """
+        Algoritmo de threshold utilizado para remoção de elementos do gradiente.
+        Este algoritmo calcula a limiarização para uma lista de coeficientes,
+        utilizando como limiar a média da magnitude subtraida do desvio padrão 
+        da matriz de gradientes ( desvio multiplicado a uma constante )
+        """
         print("Threshold por  média das magnitudes")
         sigma = np.std(image)
         #out=[np.zeros((image.shape[0],image.shape[1]))]*len(k)
@@ -118,9 +141,15 @@ class OpImage:
     #https://scikit-image.org/docs/dev/api/skimage.exposure.html#skimage.exposure.rescale_intensity
     @staticmethod
     def convolucao(image, kernel):
+        """
+        Algoritmo principal de "janela deslizante"
+        Essa função percorre todos os pixels da imagem (desconsiderando bordas)
+        calculando a regiao de interesse (ROI/janela) multiplicada aos coeficientes
+        do kernel ( máscara / núcleo )
+        """
         print("convolucao do filtro ",kernel)
-        (iW, iH) = image.shape[0],image.shape[1]
-        (kW, kH) = kernel.shape[0],kernel.shape[1]
+        iW, iH = image.shape[0],image.shape[1]
+        kW, kH = kernel.shape[0],kernel.shape[1]
         output = np.full((iW, iH),128, dtype="float32")
         kernel_padding = int((kW - 1) / 2)
         image = cv2.copyMakeBorder(image, kernel_padding, kernel_padding, kernel_padding, kernel_padding, cv2.BORDER_REPLICATE)
@@ -135,15 +164,23 @@ class OpImage:
 
     @staticmethod
     def media_convolucao(image,n):
+        """
+        Algoritmo cria uma matriz identidade, divide pelo quadrado do
+        comprimento do lado da matriz, e utiliza a convolução para 
+        percorrer a imagem aplicando-a como kernel
+        """
         print("média por convolução de matriz identidade")
         media_matriz = np.ones((n,n)) * (1 / n**2)
         return OpImage.convolucao(image,media_matriz)
 
     @staticmethod
     def media(image,n): # pegando os cantos
+        """
+        Algoritmo para calcular a média de regiões da imagem com um 
+        tamanho N x N, pegando os cantos da imagem
+        """
         out = image.copy()
         marg = int((n-1)/2)
-
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
                 med_ = 0
@@ -161,28 +198,11 @@ class OpImage:
         return out
 
     @staticmethod
-    def media_overwrite(image,n): # media pegando os cantos, mas lendo e sobrescrevendo na imagem
-        out = image.copy()
-        marg = int((n-1)/2)
-
-        for x in range(image.shape[0]):
-            for y in range(image.shape[1]):
-                med_ = 0
-                ctx = 0
-                for wi in range(-marg,marg+1):
-                    for wj in range(-marg,marg+1):
-                        if x-wi < 0 or y-wj < 0 or x-wi >= image.shape[0] or y-wj >= image.shape[1]:
-                            continue
-                        if wi == wj and wi == marg:
-                            continue
-                        med_+= out[x-wi][y-wj] # aqui usa saida invés da imagem
-                        ctx+=1
-                med_/=ctx
-                out[x][y]=med_
-        return out
-
-    @staticmethod
     def media_nomargin(image,n): # não pega os cantos
+        """
+        mesmo principio do algoritmo de OpImage.media, porém não considera os cantos
+        (começa a contar apartir de uma margem ( margem = (n-1)/2, onde n = tamanho do kernel ) )
+        """
         #window = np.zeros((n,n))
         out = image.copy()
         marg = int((n-1)/2)
@@ -201,6 +221,9 @@ class OpImage:
         
     @staticmethod
     def media_conectividade(image,n,in_range=(0,255),inverse=False):
+        """
+        Seleciona pixels, dada a diferença entre a média da região NxN sendo maior que o range
+        """
         out = image.copy()
         marg = int((n-1)/2)
         for x in range(image.shape[0]):
@@ -230,6 +253,9 @@ class OpImage:
 
     @staticmethod
     def rgbSum(image,hog):
+        """
+        Substitui um canal de cor da imagem, pelo parâmetro da matriz 'hog'
+        """
         out=image.copy()
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
@@ -239,6 +265,10 @@ class OpImage:
         
     @staticmethod
     def sobelRgb(sobelx,sobely):
+        """
+        Soma as matrizes sobelx e sobely
+        em canais de cores
+        """
         out=np.zeros((sobelx.shape[0],sobelx.shape[1],3),np.uint8)
         for x in range(sobelx.shape[0]):
             for y in range(sobelx.shape[1]):
@@ -251,6 +281,9 @@ class OpImage:
 
     @staticmethod
     def merge_min(image,subtr):
+        """
+        Função para subtrair matrizes (X,Y,1) sem normalizar
+        """
         nshape = image.copy()
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
@@ -259,6 +292,9 @@ class OpImage:
 
     @staticmethod
     def merge_max(image,add):
+        """
+        Função para somar matrizes (X,Y,1) sem normalizar
+        """
         nshape = image.copy()
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
@@ -270,6 +306,9 @@ class OpImage:
 
     @staticmethod
     def grayscale(image):
+        """
+        Cria grayscale da imagem
+        """
         print("Grayscale da imagem")
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         '''cv2.rectangle(None,(0,0),(image.shape[0],image.shape[1]),0)
@@ -293,6 +332,12 @@ class OpImage:
 
     @staticmethod
     def HOG_cell_histogram(cell_direction, cell_magnitude, hist_bins):
+        """
+        Algoritmo para calcular histograma de uma região específica 
+        da matriz de direções e magnitudes
+        código original: https://github.com/ahmedfgad/HOGNumPy/blob/master/HOG.py
+
+        """
         HOG_cell_hist = np.zeros(shape=(hist_bins.size))
         cell_size = cell_direction.shape[0]
         
@@ -327,6 +372,10 @@ class OpImage:
 
     @staticmethod
     def normalizeHog(cell_list):
+        """
+        Normaliza os valores de uma lista
+        Utilizado para normalizar os valores de magnitudes do HOG
+        """
         sum2 = 0.0
         for i in cell_list:
             sum2+=i**2
@@ -338,6 +387,12 @@ class OpImage:
 
     @staticmethod
     def drawHOG(hist, csx=8, csy=8, signed_orientation=False):
+        """
+        Desenhando o histograma no tamanho da imagem original, 
+        em células 8x8 os vetores normalizados do histograma
+        ( não foi feito interpolação tripla, operação necessária para obter
+        resultados eliminando o 'ruído' )
+        """
         print("desenhando hog")
         if signed_orientation:
             max_angle = 2*np.pi
@@ -368,6 +423,9 @@ class OpImage:
 
     @staticmethod
     def hog(magnitude,direction):
+        """
+        Calculando o histograma da imagem inteira, em várias regiões de 8x8
+        """
         print("Calculando hog da imagem")
         #angles=np.array([10,30,50,70,90,110,130,150,170])
         #angles=np.array([0,20,40,60,80,100,120,140,160])
@@ -393,34 +451,24 @@ class OpImage:
 
     @staticmethod
     def hog_region(magnitude,direction,x0,y0,x1,y1):
-        #angles=np.array([10,30,50,70,90,110,130,150,170])
-        #angles=np.array([0,20,40,60,80,100,120,140,160])
+        """
+        Calcula o hog em uma região especificada
+        ao invés de calcular a imagem inteira
+        """
         angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
-        angrange = range(len(angles))
-        lmy,lmx = magnitude.shape[:2]
-        print(magnitude.shape)
-        print(direction.shape)
-        print(lmx,lmy)
-        hog_cells = np.ndarray( ((lmx//8),(lmy//8),len(angles)) )
-        print(hog_cells.shape)
-        ii,jj=0,0
-        for i in range(0,lmx-1,8):
-            jj=0
-            for j in range(0,lmy-1,8):
-                '''cell_direction = direction[178:186, 138:146]
-                cell_magnitude = magnitude[178:186, 138:146]'''
-                cell_direction = direction[j:j+7, i:i+7]
-                cell_magnitude = magnitude[j:j+7, i:i+7]
-                HOG_list = OpImage.HOG_cell_histogram(cell_direction, cell_magnitude, angles)
-                norm_hog = OpImage.normalizeHog( HOG_list )
-                for nh in angrange:
-                    hog_cells[ii][jj][nh]=norm_hog[nh]
-                jj+=1
-            ii+=1
-        return hog_cells
+        cell_direction = direction[x0:x0+7, y0:y0+7]
+        cell_magnitude = magnitude[x0:x0+7, y0:y0+7]
+        HOG_list = OpImage.HOG_cell_histogram(cell_direction, cell_magnitude, angles)
+        norm_hog = OpImage.normalizeHog( HOG_list )
+        return norm_hog
 
     @staticmethod
     def agrupar_hog(hog_data,x=0,y=0,block_size=4):
+        """
+        Agrupa as magnitudes de grupos de células (block_size x block_size)
+        e retorna (normalizado) o novo vetor somatório de magnitudes de todas as 
+        regiões
+        """
         hog_angles=hog_data.shape[2]
         hog_vector = np.zeros((hog_angles))
         for i in range(x,x+block_size):
@@ -433,7 +481,10 @@ class OpImage:
 
     @staticmethod
     def drawHOGHistogram(hog_hist):
-        x = angles=np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
+        """
+        Desenhar gráfico em barras das magnitudes dos dados do histograma
+        """
+        x = np.array([0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170])
         #x = np.arange(len(hog_hist))
         fig, axes = plt.subplots(ncols=1, nrows=1)
         plt.title('HOG')
