@@ -237,6 +237,16 @@ class OpImage:
                 out[x][y][1] = hog[x][y]
         return out
         
+    @staticmethod
+    def sobelRgb(sobelx,sobely):
+        out=np.zeros((sobelx.shape[0],sobelx.shape[1],3),np.uint8)
+        for x in range(sobelx.shape[0]):
+            for y in range(sobelx.shape[1]):
+                #out[x][y][0] = hog[x][y]
+                out[x][y][2] = sobelx[x][y]
+                out[x][y][1] = sobely[x][y]
+                out[x][y][0] = 0
+        return out
 
 
     @staticmethod
@@ -429,7 +439,7 @@ class OpImage:
         plt.title('HOG')
         plt.xlabel('Angulos')
         plt.ylabel('Magnitudes')
-        axes.bar(x, hog_hist, label="Histograma 1",width=0.8)
+        axes.bar(x, hog_hist,width=8,align="center")
         axes.set_xticks(x)
         #axes.set_xticklabels(['Positive'])
         plt.legend()

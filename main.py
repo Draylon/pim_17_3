@@ -15,6 +15,7 @@ image1 = cv2.imread("./images/img02.jpg")
 gray = OpImage.grayscale(image1)
 sx = OpImage.convolucao(gray,sobelX)
 sy = OpImage.convolucao(gray,sobelY)
+ss = OpImage.sobelRgb(sx,sy)
 
 magnitude,angulos = OpImage.mag_direction(sx,sy)
 limiar1 = OpImage.threshold_media(magnitude,[1.7])
@@ -40,16 +41,16 @@ hog_dataC = [ OpImage.hog(xx,angulos) for xx in limiar1 ]
 hog_hist = OpImage.agrupar_hog(hog_dataC[0],57,24,4)
 OpImage.drawHOGHistogram(hog_hist)
 
-'''
+
 cv2.imshow("gray",gray)
 cv2.imshow("sx",sx)
 cv2.imshow("sy",sy)
-for ind,img in enumerate(hog_imageC):
-    cv2.imshow("HOG IMAGE"+str(ind),img)
+#for ind,img in enumerate(hog_imageC):
+#    cv2.imshow("HOG IMAGE"+str(ind),img)
 #cv2.imshow("HOG OFFICIAL",visualize)
 cv2.imshow("IMAGEM ORIGINAL",image1)
+cv2.imshow("SOBEL",ss)
 #cv2.imshow("HOG OVERLAY",hog_original)
-'''
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
